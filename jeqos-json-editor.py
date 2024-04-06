@@ -321,6 +321,13 @@ def refresh_function():
             file_name = os.path.splitext(file)[0]  # Get file name without extension
             json_files_treeview.insert("", "end", text=file_name)
     
+    # Reset the selected banner
+    banner_label.config(text="")
+    
+    # Reset the current labels
+    current_label.config(text="")
+    current_label_2.config(text="")
+    
     # Display success banner
     display_info_banner(main_window, "JSON file list refreshed.")
 
