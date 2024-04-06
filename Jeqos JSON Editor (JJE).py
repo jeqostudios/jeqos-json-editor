@@ -351,6 +351,12 @@ def display_selected_banner(window, selected_file_name):
     selected_banner.place(relx=0.5, rely=1.0, anchor=tk.S, y=0, relwidth=1.0)
     window.after(3000, lambda: fade_out(selected_banner))  # Fade out after 3 seconds
 
+def on_hover_close(event):
+    if close_button:
+        close_button.config(bg="#d90b20")
+
+close_button = None
+
 def main():
     global main_window, json_files_treeview, texture_treeview, path_entry, banner_label, file_name_entry, frame, current_label, current_label_2
 
@@ -371,10 +377,14 @@ def main():
     # Create custom title bar
     title_bar = tk.Frame(main_window, bg="#222", relief="raised", bd=0)
     title_label = tk.Label(title_bar, text="Jeqo's JSON Editor (JJE)", bg="#222", fg="white", padx=6, pady=6)
-    close_button = tk.Button(title_bar, text="X", command=main_window.quit, bg="#222", fg="white", relief="flat", padx=12, pady=6, activebackground="#d90b20", activeforeground="white", font=("Arial", 10, "bold"), borderwidth=0)
     title_bar.pack(fill="x")
     title_label.pack(side="left")
+    close_button = tk.Button(title_bar, text="X", command=main_window.quit, bg="#222", fg="white", relief="flat", padx=12, pady=6, activebackground="#d90b20", activeforeground="white", font=("Arial", 10, "bold"), borderwidth=0)
     close_button.pack(side="right")
+    
+    # Add hover effect to the close button
+    close_button.bind("<Enter>", lambda event: close_button.config(bg="#d90b20"))
+    close_button.bind("<Leave>", lambda event: close_button.config(bg="#222"))
 
     # Event handlers for dragging the window
     title_bar.bind("<ButtonPress-1>", on_title_bar_drag_start)
