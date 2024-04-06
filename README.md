@@ -1,5 +1,5 @@
 # Jeqo's JSON Editor
 
-Simple UI to edit Minecraft Java JSON paths and texture names.
+Simple UI to edit Java Minecraft Java JSON paths and texture names.
 
-![](https://i.imgur.com/bVx8uwg.png)
+![](https://i.imgur.com/NYERvnc.png)
