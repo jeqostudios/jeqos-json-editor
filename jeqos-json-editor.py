@@ -155,6 +155,8 @@ def select_json_file(event):
     global current_label  # Ensure current_label is accessed globally
 
     selected_items = json_files_treeview.selection()
+
+    # Check if any item is selected
     if not selected_items:
         display_error_banner(main_window, "No JSON file selected.")
         return
@@ -310,8 +312,15 @@ def change_path():
     current_label.config(text=f"Current: {new_path}")
 
 def refresh_function():
-    # Clear the existing items in the JSON treeview
+    # Clear the selection in the JSON file treeview
+    json_files_treeview.selection_remove(json_files_treeview.selection())
+
+    # Clear the existing items in the JSON and texture treeview
     json_files_treeview.delete(*json_files_treeview.get_children())
+    texture_treeview.delete(*texture_treeview.get_children())
+
+    # Reset the banner label
+    banner_label.config(text="")
 
     # Repopulate the JSON treeview with current JSON files in the directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -322,6 +331,7 @@ def refresh_function():
     
     # Display success banner
     display_info_banner(main_window, "JSON file list refreshed.")
+
 
 def display_success_banner(window, message):
     success_label = tk.Label(window, text=message, bg="#4CAF50", fg="white", padx=6, pady=6)
