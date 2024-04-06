@@ -1,5 +1,5 @@
-# Jeqo's Atlas Adder
-Simple UI to add or update atlases for Java Minecraft resource packs (versions 1.19.3+).
+# Jeqo's JSON Editor
+Simple UI to manage Java Minecraft JSON file paths and texture names.
 
 ## Usage
 1. Install [Python](https://www.python.org/downloads/).
