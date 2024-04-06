@@ -155,8 +155,6 @@ def select_json_file(event):
     global current_label  # Ensure current_label is accessed globally
 
     selected_items = json_files_treeview.selection()
-
-    # Check if any item is selected
     if not selected_items:
         display_error_banner(main_window, "No JSON file selected.")
         return
@@ -243,17 +241,19 @@ def remove_texture(remove_texture_button):
         selected_file_name = json_files_treeview.item(selected_file_items[0], "text")
         selected_file = f"{selected_file_name}.json"  # Reattach the extension
 
-        if not os.path.isfile(selected_file):
-            display_error_banner(main_window, f"File {selected_file} not found!")
+        selected_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), selected_file))
+
+        if not os.path.isfile(selected_file_path):
+            display_error_banner(main_window, f"File {selected_file_path} not found!")
             return
 
-        with open(selected_file, "r") as file:
+        with open(selected_file_path, "r") as file:
             json_data = json.load(file)
 
         if selected_texture_name in json_data.get("textures", {}):
             del json_data["textures"][selected_texture_name]
             success_message = f"Texture successfully removed: {selected_texture_name}"
-            with open(selected_file, "w") as file:
+            with open(selected_file_path, "w") as file:
                 json.dump(json_data, file, separators=(",", ":"), ensure_ascii=False)
 
             # Remove the selected item from the texture treeview
@@ -276,7 +276,6 @@ def remove_texture(remove_texture_button):
     else:
         remove_texture_button.config(bg="#d90b20", text="Are You Sure?")
         main_window.after(3000, lambda: remove_texture_button.config(bg="#333", text="Remove Texture"))
-
 
 def change_path():
     selected_items = json_files_treeview.selection()
@@ -312,15 +311,8 @@ def change_path():
     current_label.config(text=f"Current: {new_path}")
 
 def refresh_function():
-    # Clear the selection in the JSON file treeview
-    json_files_treeview.selection_remove(json_files_treeview.selection())
-
-    # Clear the existing items in the JSON and texture treeview
+    # Clear the existing items in the JSON treeview
     json_files_treeview.delete(*json_files_treeview.get_children())
-    texture_treeview.delete(*texture_treeview.get_children())
-
-    # Reset the banner label
-    banner_label.config(text="")
 
     # Repopulate the JSON treeview with current JSON files in the directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -331,7 +323,6 @@ def refresh_function():
     
     # Display success banner
     display_info_banner(main_window, "JSON file list refreshed.")
-
 
 def display_success_banner(window, message):
     success_label = tk.Label(window, text=message, bg="#4CAF50", fg="white", padx=6, pady=6)
