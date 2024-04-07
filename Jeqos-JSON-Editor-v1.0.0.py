@@ -3,6 +3,48 @@ import json
 import tkinter as tk
 from tkinter import ttk
 from tkinter import simpledialog, messagebox, filedialog
+import requests
+import webbrowser
+
+current_version = "0.0.0"
+
+main_window = tk.Tk()
+
+banner_label = tk.Label(main_window, text="", bg="#222", fg="white", padx=6, pady=6)  # Banner label
+banner_label.pack(fill="x", side="bottom")
+
+github_release_url = "https://github.com/jeqostudios/jeqos-json-editor/releases/latest"
+
+def check_latest_version(release_url):
+    try:
+        response = requests.get(release_url, allow_redirects=False)
+        latest_version = response.headers['Location'].split('/')[-1]
+        return latest_version
+    except Exception as e:
+        show_error_banner("Failed to retrieve latest info from GitHub: {str(e)}")
+        return None
+
+def compare_versions(current_version, latest_version):
+    current_version = current_version.lstrip("v")
+    latest_version = latest_version.lstrip("v")
+    return current_version < latest_version
+
+latest_version = check_latest_version(github_release_url)
+
+if latest_version:
+    if compare_versions(current_version, latest_version):
+        banner_label.config(text="A newer version is available. Click here to update.", bg="#d90b20", fg="white")
+        main_window.after(5000, lambda: banner_label.config(text="", bg="#222"))
+else:
+    banner_label.config(text="Failed to retrieve latest info from GitHub: {str(e)}", bg="#d90b20", fg="white")
+    main_window.after(5000, lambda: banner_label.config(text="", bg="#222"))
+
+def update_banner(event):
+    if banner_label.cget("text") == "A newer version is available. Click here to update.":
+        # Open a web page when the error banner is clicked
+        webbrowser.open("https://jeqo.net/atlas-adder")
+
+banner_label.bind("<Button-1>", update_banner)
 
 def validate_path_input(text):
     allowed_chars = set("abcdefghijklmnopqrstuvwxyz0123456789-_/")
@@ -21,20 +63,20 @@ def get_texture_name_placeholder(texture_path):
 def change_selected_texture_name():
     selected_items = texture_treeview.selection()
     if not selected_items:
-        display_error_banner(main_window, "No texture selected.")
+        show_error_banner(main_window, "No texture selected.")
         return
 
     selected_texture_name = texture_treeview.item(selected_items[0], "text")
     selected_file_items = json_files_treeview.selection()
     if not selected_file_items:
-        display_error_banner(main_window, "No JSON file selected.")
+        show_error_banner(main_window, "No JSON file selected.")
         return
 
     selected_file_name = json_files_treeview.item(selected_file_items[0], "text")
     new_texture_name = file_name_entry.get()
 
     if not new_texture_name:
-        display_error_banner(main_window, "Invalid new texture name provided.")
+        show_error_banner(main_window, "Invalid new texture name provided.")
         return
 
     change_textures(main_window, "Texture Name", new_texture_name, selected_texture_name, selected_file_name)
@@ -55,7 +97,7 @@ def change_textures(window, option, new_value, texture_name, selected_file_name)
     success_message = ""  # Define success_message here
 
     if not os.path.isfile(selected_file_path):
-        display_error_banner(main_window, f"File '{selected_file}' not found!")
+        show_error_banner(main_window, f"File '{selected_file}' not found!")
         return
 
     with open(selected_file_path, "r") as file:
@@ -80,11 +122,11 @@ def change_textures(window, option, new_value, texture_name, selected_file_name)
     elif option == "Texture Name":
         if not validate_texture_input(new_value):
             error_message = "Texture name contains invalid characters."
-            display_error_banner(window, error_message)
+            show_error_banner(window, error_message)
             return
 
         if not texture_name:
-            display_error_banner(main_window, "No texture was selected.")
+            show_error_banner(main_window, "No texture was selected.")
             return
 
         # Extract the texture variable by the first parameter of the selected texture
@@ -102,13 +144,13 @@ def change_textures(window, option, new_value, texture_name, selected_file_name)
                 json_data["textures"][selected_texture_variable] = new_texture_path
                 success_message = "Successfully changed texture name."
             else:
-                display_error_banner(main_window, "Texture name cannot be changed. Invalid texture path.")
+                show_error_banner(main_window, "Texture name cannot be changed. Invalid texture path.")
                 return
         else:
-            display_error_banner(main_window, f"Selected texture variable '{selected_texture_variable}' not found in JSON file.")
+            show_error_banner(main_window, f"Selected texture variable '{selected_texture_variable}' not found in JSON file.")
             return
     else:
-        display_error_banner(main_window, "Invalid option provided.")
+        show_error_banner(main_window, "Invalid option provided.")
         return
 
     with open(selected_file_path, "w") as file:
@@ -120,12 +162,12 @@ def change_textures(window, option, new_value, texture_name, selected_file_name)
 
 def change_all_textures(window, new_path):
     if not new_path:
-        display_error_banner(window, "Invalid new path provided.")
+        show_error_banner(window, "Invalid new path provided.")
         return
 
     # Check if only a single "/" is provided
     if new_path == "/":
-        display_error_banner(window, "Please provide a valid path.")
+        show_error_banner(window, "Please provide a valid path.")
         return
 
     # Remove leading and trailing "/" characters from the new path
@@ -156,13 +198,13 @@ def select_json_file(event):
 
     selected_items = json_files_treeview.selection()
     if not selected_items:
-        display_error_banner(main_window, "No JSON file selected.")
+        show_error_banner(main_window, "No JSON file selected.")
         return
 
     selected_item = selected_items[0]
     selected_file_name = json_files_treeview.item(selected_item, "text")
     if not selected_file_name:
-        display_error_banner(main_window, "No JSON file selected.")
+        show_error_banner(main_window, "No JSON file selected.")
         return
 
     selected_file = f"{selected_file_name}.json"  # Reattach the extension
@@ -170,7 +212,7 @@ def select_json_file(event):
     selected_file_path = os.path.join(script_dir, selected_file)  # Construct the full file path
 
     if not os.path.isfile(selected_file_path):
-        display_error_banner(main_window, f"File '{selected_file}' not found.")
+        show_error_banner(main_window, f"File '{selected_file}' not found.")
         return
 
     # Update window title
@@ -235,7 +277,7 @@ def remove_texture(remove_texture_button):
 
         selected_file_items = json_files_treeview.selection()
         if not selected_file_items:
-            display_error_banner(main_window, "No JSON file selected.")
+            show_error_banner(main_window, "No JSON file selected.")
             return
 
         selected_file_name = json_files_treeview.item(selected_file_items[0], "text")
@@ -244,7 +286,7 @@ def remove_texture(remove_texture_button):
         selected_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), selected_file))
 
         if not os.path.isfile(selected_file_path):
-            display_error_banner(main_window, f"File {selected_file_path} not found!")
+            show_error_banner(main_window, f"File {selected_file_path} not found!")
             return
 
         with open(selected_file_path, "r") as file:
@@ -263,11 +305,11 @@ def remove_texture(remove_texture_button):
             success_banner.place(relx=0, rely=1.0, anchor=tk.SW, y=0, relwidth=1.0)
             main_window.after(3000, lambda: success_banner.destroy())  # Remove banner after 3 seconds
         else:
-            display_error_banner(main_window, f"Texture '{selected_texture_name}' not found in JSON file!")
+            show_error_banner(main_window, f"Texture '{selected_texture_name}' not found in JSON file!")
 
     selected_items = texture_treeview.selection()
     if not selected_items:
-        display_error_banner(main_window, "No texture selected.")
+        show_error_banner(main_window, "No texture selected.")
         return
 
     if remove_texture_button.cget("bg") == "#d90b20":
@@ -280,7 +322,7 @@ def remove_texture(remove_texture_button):
 def change_path():
     selected_items = json_files_treeview.selection()
     if not selected_items:
-        display_error_banner(main_window, "No JSON file selected.")
+        show_error_banner(main_window, "No JSON file selected.")
         return
 
     selected_file_name = json_files_treeview.item(selected_items[0], "text")
@@ -288,11 +330,11 @@ def change_path():
     
     # Check if only a single "/" is provided
     if new_path == "/":
-        display_error_banner(main_window, "Please provide a valid path.")
+        show_error_banner(main_window, "Please provide a valid path.")
         return
 
     if not new_path:
-        display_error_banner(main_window, "Invalid new path provided.")
+        show_error_banner(main_window, "Invalid new path provided.")
         return
 
     # Remove leading and trailing "/" characters from the new path
@@ -302,7 +344,7 @@ def change_path():
     with open(f"{selected_file_name}.json", "r") as file:
         json_data = json.load(file)
         if not json_data.get("textures"):
-            display_error_banner(main_window, "JSON file does not have any textures.")
+            show_error_banner(main_window, "JSON file does not have any textures.")
             return
 
     change_textures(main_window, "Path", new_path, None, selected_file_name)
@@ -329,24 +371,24 @@ def refresh_function():
     current_label_2.config(text="")
     
     # Display success banner
-    display_info_banner(main_window, "JSON file list refreshed.")
+    show_info_banner(main_window, "JSON file list refreshed.")
 
-def display_success_banner(window, message):
+def show_success_banner(window, message):
     success_label = tk.Label(window, text=message, bg="#4CAF50", fg="white", padx=6, pady=6)
     success_label.place(relx=0.5, rely=1.0, anchor=tk.S, y=0, relwidth=1.0)
     window.after(3000, lambda: fade_out(success_label))  # Fade out after 3 seconds
 
-def display_error_banner(window, message):
+def show_error_banner(window, message):
     error_label = tk.Label(window, text=message, bg="#d90b20", fg="white", padx=6, pady=6)
     error_label.place(relx=0.5, rely=1.0, anchor=tk.S, y=0, relwidth=1.0)
     window.after(3000, lambda: fade_out(error_label))  # Fade out after 3 seconds
 
-def display_info_banner(window, message):
+def show_info_banner(window, message):
     info_label = tk.Label(window, text=message, bg="#0b80d9", fg="white", padx=6, pady=6)
     info_label.place(relx=0.5, rely=1.0, anchor=tk.S, y=0, relwidth=1.0)
     window.after(1500, lambda: fade_out(info_label))  # Fade out after 3 seconds
 
-def display_selected_banner(window, selected_file_name):
+def show_selected_banner(window, selected_file_name):
     selected_banner = tk.Label(window, text=f"Selected: {selected_file_name}", bg="#222", fg="white", padx=6, pady=6)
     selected_banner.place(relx=0.5, rely=1.0, anchor=tk.S, y=0, relwidth=1.0)
     window.after(3000, lambda: fade_out(selected_banner))  # Fade out after 3 seconds
@@ -360,7 +402,6 @@ close_button = None
 def main():
     global main_window, json_files_treeview, texture_treeview, path_entry, banner_label, file_name_entry, frame, current_label, current_label_2
 
-    main_window = tk.Tk()
     main_window.title("Jeqo's JSON Editor")
     main_window.configure(bg="#000")
     main_window.overrideredirect(True)  # Hide default title bar
@@ -392,9 +433,6 @@ def main():
 
     frame = tk.Frame(main_window, bg="#111", padx=30, pady=30)
     frame.pack(expand=True, fill="both")
-
-    banner_label = tk.Label(main_window, text="", bg="#222", fg="white", padx=6, pady=6)  # Banner label
-    banner_label.pack(fill="x")
 
     # Add "Current:" label
     current_label = tk.Label(frame, text="", bg="#111", fg="white")  # First current label
