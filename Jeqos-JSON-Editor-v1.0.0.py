@@ -10,7 +10,7 @@ current_version = "0.0.0"
 
 main_window = tk.Tk()
 
-banner_label = tk.Label(main_window, text="", bg="#222", fg="white", padx=6, pady=6)  # Banner label
+banner_label = tk.Label(main_window, text="", bg="#222", fg="white", padx=6, pady=6)
 banner_label.pack(fill="x", side="bottom")
 
 github_release_url = "https://github.com/jeqostudios/jeqos-json-editor/releases/latest"
@@ -41,7 +41,6 @@ else:
 
 def update_banner(event):
     if banner_label.cget("text") == "A newer version is available. Click here to update.":
-        # Open a web page when the error banner is clicked
         webbrowser.open("https://jeqo.net/atlas-adder")
 
 banner_label.bind("<Button-1>", update_banner)
@@ -82,7 +81,7 @@ def change_selected_texture_name():
     change_textures(main_window, "Texture Name", new_texture_name, selected_texture_name, selected_file_name)
 
     # Update the texture name in the texture treeview
-    selected_texture_variable = selected_texture_name.split()[0]  # Extract the texture variable
+    selected_texture_variable = selected_texture_name.split()[0]
     new_texture_display_name = f"{selected_texture_variable} ({new_texture_name})"
     texture_treeview.item(selected_items[0], text=new_texture_display_name)
 
@@ -90,11 +89,11 @@ def change_selected_texture_name():
     current_label_2.config(text=f"Current: {new_texture_name}")
 
 def change_textures(window, option, new_value, texture_name, selected_file_name):
-    selected_file = f"{selected_file_name}.json"  # Reattach the extension
+    selected_file = f"{selected_file_name}.json"
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    selected_file_path = os.path.join(script_dir, selected_file)  # Construct the full file path
+    selected_file_path = os.path.join(script_dir, selected_file)
 
-    success_message = ""  # Define success_message here
+    success_message = ""
 
     if not os.path.isfile(selected_file_path):
         show_error_banner(main_window, f"File '{selected_file}' not found!")
@@ -109,7 +108,7 @@ def change_textures(window, option, new_value, texture_name, selected_file_name)
             # Find the common prefix up to the last "/"
             last_slash_index = texture_path.rfind("/")
             if last_slash_index != -1:
-                common_prefix = texture_path[:last_slash_index]  # Exclude the last "/"
+                common_prefix = texture_path[:last_slash_index]
                 updated_texture_path = f"{new_value}{texture_path[last_slash_index:]}"
                 json_data["textures"][texture_name] = updated_texture_path
             else:
@@ -158,7 +157,7 @@ def change_textures(window, option, new_value, texture_name, selected_file_name)
 
     success_label = tk.Label(window, text=success_message, bg="#4CAF50", fg="white", padx=6, pady=6)
     success_label.place(relx=0.5, rely=1.0, anchor=tk.S, y=0, relwidth=1.0)
-    window.after(3000, lambda: fade_out(success_label))  # Fade out after 3 seconds
+    window.after(3000, lambda: fade_out(success_label))
 
 def change_all_textures(window, new_path):
     if not new_path:
@@ -181,20 +180,20 @@ def change_all_textures(window, new_path):
     current_label.config(text=f"Current: {new_path}")
 
 def fade_out(widget):
-    alpha = widget.winfo_rgb(widget.cget("bg"))  # Get color tuple
-    if len(alpha) > 3:  # Check if alpha channel is available
+    alpha = widget.winfo_rgb(widget.cget("bg"))
+    if len(alpha) > 3:
         alpha_value = alpha[3]
         if alpha_value > 0:
             alpha_value -= 1
             widget.config(bg=f'#{alpha[0]:02x}{alpha[1]:02x}{alpha[2]:02x}{alpha_value:02x}')
-            widget.after(10, lambda: fade_out(widget))  # Schedule next fade-out step
+            widget.after(10, lambda: fade_out(widget))
         else:
-            widget.destroy()  # Destroy the widget when completely faded out
+            widget.destroy()
     else:
-        widget.destroy()  # Destroy the widget if alpha channel is not available
+        widget.destroy()
 
 def select_json_file(event):
-    global current_label  # Ensure current_label is accessed globally
+    global current_label
 
     selected_items = json_files_treeview.selection()
     if not selected_items:
@@ -207,9 +206,9 @@ def select_json_file(event):
         show_error_banner(main_window, "No JSON file selected.")
         return
 
-    selected_file = f"{selected_file_name}.json"  # Reattach the extension
+    selected_file = f"{selected_file_name}.json"
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    selected_file_path = os.path.join(script_dir, selected_file)  # Construct the full file path
+    selected_file_path = os.path.join(script_dir, selected_file)
 
     if not os.path.isfile(selected_file_path):
         show_error_banner(main_window, f"File '{selected_file}' not found.")
@@ -219,11 +218,11 @@ def select_json_file(event):
     file_name = os.path.splitext(selected_file)[0]
 
     with open(selected_file_path, "r") as file:
-        global json_data  # Ensure json_data is global
+        global json_data
         json_data = json.load(file)
 
     # Populate texture listbox
-    texture_treeview.delete(*texture_treeview.get_children())  # Clear the existing items
+    texture_treeview.delete(*texture_treeview.get_children())
     for texture_name in json_data.get("textures", {}):
         texture_path = json_data["textures"][texture_name]
         texture_name_placeholder = get_texture_name_placeholder(texture_path)
@@ -281,7 +280,7 @@ def remove_texture(remove_texture_button):
             return
 
         selected_file_name = json_files_treeview.item(selected_file_items[0], "text")
-        selected_file = f"{selected_file_name}.json"  # Reattach the extension
+        selected_file = f"{selected_file_name}.json"
 
         selected_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), selected_file))
 
@@ -303,7 +302,7 @@ def remove_texture(remove_texture_button):
 
             success_banner = tk.Label(main_window, text=success_message, bg="#4CAF50", fg="white", padx=6, pady=6)
             success_banner.place(relx=0, rely=1.0, anchor=tk.SW, y=0, relwidth=1.0)
-            main_window.after(3000, lambda: success_banner.destroy())  # Remove banner after 3 seconds
+            main_window.after(3000, lambda: success_banner.destroy())
         else:
             show_error_banner(main_window, f"Texture '{selected_texture_name}' not found in JSON file!")
 
@@ -360,7 +359,7 @@ def refresh_function():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     for file in os.listdir(script_dir):
         if file.endswith(".json"):
-            file_name = os.path.splitext(file)[0]  # Get file name without extension
+            file_name = os.path.splitext(file)[0]
             json_files_treeview.insert("", "end", text=file_name)
     
     # Reset the selected banner
@@ -376,22 +375,22 @@ def refresh_function():
 def show_success_banner(window, message):
     success_label = tk.Label(window, text=message, bg="#4CAF50", fg="white", padx=6, pady=6)
     success_label.place(relx=0.5, rely=1.0, anchor=tk.S, y=0, relwidth=1.0)
-    window.after(3000, lambda: fade_out(success_label))  # Fade out after 3 seconds
+    window.after(3000, lambda: fade_out(success_label))
 
 def show_error_banner(window, message):
     error_label = tk.Label(window, text=message, bg="#d90b20", fg="white", padx=6, pady=6)
     error_label.place(relx=0.5, rely=1.0, anchor=tk.S, y=0, relwidth=1.0)
-    window.after(3000, lambda: fade_out(error_label))  # Fade out after 3 seconds
+    window.after(3000, lambda: fade_out(error_label))
 
 def show_info_banner(window, message):
     info_label = tk.Label(window, text=message, bg="#0b80d9", fg="white", padx=6, pady=6)
     info_label.place(relx=0.5, rely=1.0, anchor=tk.S, y=0, relwidth=1.0)
-    window.after(1500, lambda: fade_out(info_label))  # Fade out after 3 seconds
+    window.after(1500, lambda: fade_out(info_label))
 
 def show_selected_banner(window, selected_file_name):
     selected_banner = tk.Label(window, text=f"Selected: {selected_file_name}", bg="#222", fg="white", padx=6, pady=6)
     selected_banner.place(relx=0.5, rely=1.0, anchor=tk.S, y=0, relwidth=1.0)
-    window.after(3000, lambda: fade_out(selected_banner))  # Fade out after 3 seconds
+    window.after(3000, lambda: fade_out(selected_banner))
 
 def on_hover_close(event):
     if close_button:
@@ -404,7 +403,7 @@ def main():
 
     main_window.title("Jeqo's JSON Editor")
     main_window.configure(bg="#000")
-    main_window.overrideredirect(True)  # Hide default title bar
+    main_window.overrideredirect(True)
 
     # Calculate the position of the window to center it on the screen
     screen_width = main_window.winfo_screenwidth()
@@ -434,11 +433,11 @@ def main():
     frame = tk.Frame(main_window, bg="#111", padx=30, pady=30)
     frame.pack(expand=True, fill="both")
 
-    # Add "Current:" label
-    current_label = tk.Label(frame, text="", bg="#111", fg="white")  # First current label
+    # "Current:" labels
+    current_label = tk.Label(frame, text="", bg="#111", fg="white")
     current_label.grid(row=6, column=0, sticky="w", pady=(0, 10), padx=(0, 30))
 
-    current_label_2 = tk.Label(frame, text="", bg="#111", fg="white")  # Second current label
+    current_label_2 = tk.Label(frame, text="", bg="#111", fg="white")
     current_label_2.grid(row=6, column=1, sticky="w", pady=(0, 10), padx=(30, 0))
 
     json_files_label = tk.Label(frame, text="Select JSON File:", bg="#111", fg="white")
@@ -510,7 +509,7 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     for file in os.listdir(script_dir):
         if file.endswith(".json"):
-            file_name = os.path.splitext(file)[0]  # Get file name without extension
+            file_name = os.path.splitext(file)[0]
             json_files_treeview.insert("", "end", text=file_name)
 
     main_window.mainloop()
